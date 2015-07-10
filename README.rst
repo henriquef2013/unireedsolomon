@@ -109,6 +109,8 @@ RSCoder.decode_fast(message_ecc, nostrip=False, k=None, erasures_pos=None, only_
     When nostrip is True, messages returned are always k bytes long. This is
     useful to make sure no data is lost when decoding binary data.
 
+    Note that RS can correct errors both in the message and the ecc symbols.
+
 RSCoder.check(message_ecc, k=None)
 RSCoder.check_fast(message_ecc, k=None)
     Verifies the codeword (message + ecc symbols at the end) is valid by testing
