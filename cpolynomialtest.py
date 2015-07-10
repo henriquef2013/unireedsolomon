@@ -1,9 +1,9 @@
 import unittest
 
-from polynomial import Polynomial
-from ff import GF2int
+from cpolynomial import Polynomial
+from cff import GF2int
 
-class TestGFPoly(unittest.TestCase):
+class cTestGFPoly(unittest.TestCase):
     """Tests that the Polynomial class works when given GF2int objects
     instead of regular integers
     """
@@ -125,7 +125,7 @@ class TestGFPoly(unittest.TestCase):
 
 
 
-class TestPolynomial(unittest.TestCase):
+class cTestPolynomial(unittest.TestCase):
     def test_add_1(self):
         one = Polynomial([2,4,7,3])
         two = Polynomial([5,2,4,2])

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2010 Andrew Brown <brownan@cs.duke.edu, brownan@gmail.com>
@@ -8,52 +7,58 @@
 # For fast software computation in Finite Fields, see the excellent paper: Huang, Cheng, and Lihao Xu. "Fast software implementation of finite field operations." Washington University in St. Louis, Tech. Rep (2003).
 # to understand the basic mathematical notions behind finite fields, see the excellent tutorial: http://research.swtch.com/field
 
-import array
+import cython
+cimport cython
+
+from cpython cimport array
 
 # Galois Field's characteristic, by default, it's GF(2^8) == GF(256)
 # Note that it's -1 (thus for GF(2^8) it's really 255 and not 256) because this is historically tied to the definition of Reed-Solomon codes: since the 0 and 256 values are impossible, we effectively have only 255 possible values. But later were defined (singly) extended Reed-Solomon codes, which include the 0 and thus 256 values, and then doubly extended Reed-Solomon codes which include the 0 and 256 == infinity.
-GF2_charac = int(2**8 - 1)
-GF2_c_exp = 8
+cdef int GF2_charac = int(2**8 - 1)
+cdef int GF2_c_exp = 8
 
 # Exponent table for generator=3 and prim=0x11b in GF(2^8)
-GF2int_exptable = array.array("i", [1, 3, 5, 15, 17, 51, 85, 255, 26, 46, 114, 150, 161, 248, 19,
-        53, 95, 225, 56, 72, 216, 115, 149, 164, 247, 2, 6, 10, 30, 34,
-        102, 170, 229, 52, 92, 228, 55, 89, 235, 38, 106, 190, 217, 112,
-        144, 171, 230, 49, 83, 245, 4, 12, 20, 60, 68, 204, 79, 209, 104,
-        184, 211, 110, 178, 205, 76, 212, 103, 169, 224, 59, 77, 215, 98,
-        166, 241, 8, 24, 40, 120, 136, 131, 158, 185, 208, 107, 189, 220,
-        127, 129, 152, 179, 206, 73, 219, 118, 154, 181, 196, 87, 249, 16,
-        48, 80, 240, 11, 29, 39, 105, 187, 214, 97, 163, 254, 25, 43, 125,
-        135, 146, 173, 236, 47, 113, 147, 174, 233, 32, 96, 160, 251, 22,
-        58, 78, 210, 109, 183, 194, 93, 231, 50, 86, 250, 21, 63, 65, 195,
-        94, 226, 61, 71, 201, 64, 192, 91, 237, 44, 116, 156, 191, 218,
-        117, 159, 186, 213, 100, 172, 239, 42, 126, 130, 157, 188, 223,
-        122, 142, 137, 128, 155, 182, 193, 88, 232, 35, 101, 175, 234, 37,
-        111, 177, 200, 67, 197, 84, 252, 31, 33, 99, 165, 244, 7, 9, 27,
-        45, 119, 153, 176, 203, 70, 202, 69, 207, 74, 222, 121, 139, 134,
-        145, 168, 227, 62, 66, 198, 81, 243, 14, 18, 54, 90, 238, 41, 123,
-        141, 140, 143, 138, 133, 148, 167, 242, 13, 23, 57, 75, 221, 124,
-        132, 151, 162, 253, 28, 36, 108, 180, 199, 82, 246, 1])
+cdef array.array GF2int_exptable_a = array.array('i', [1, 3, 5, 15, 17, 51, 85, 255, 26, 46, 114, 150, 161, 248, 19,
+            53, 95, 225, 56, 72, 216, 115, 149, 164, 247, 2, 6, 10, 30, 34,
+            102, 170, 229, 52, 92, 228, 55, 89, 235, 38, 106, 190, 217, 112,
+            144, 171, 230, 49, 83, 245, 4, 12, 20, 60, 68, 204, 79, 209, 104,
+            184, 211, 110, 178, 205, 76, 212, 103, 169, 224, 59, 77, 215, 98,
+            166, 241, 8, 24, 40, 120, 136, 131, 158, 185, 208, 107, 189, 220,
+            127, 129, 152, 179, 206, 73, 219, 118, 154, 181, 196, 87, 249, 16,
+            48, 80, 240, 11, 29, 39, 105, 187, 214, 97, 163, 254, 25, 43, 125,
+            135, 146, 173, 236, 47, 113, 147, 174, 233, 32, 96, 160, 251, 22,
+            58, 78, 210, 109, 183, 194, 93, 231, 50, 86, 250, 21, 63, 65, 195,
+            94, 226, 61, 71, 201, 64, 192, 91, 237, 44, 116, 156, 191, 218,
+            117, 159, 186, 213, 100, 172, 239, 42, 126, 130, 157, 188, 223,
+            122, 142, 137, 128, 155, 182, 193, 88, 232, 35, 101, 175, 234, 37,
+            111, 177, 200, 67, 197, 84, 252, 31, 33, 99, 165, 244, 7, 9, 27,
+            45, 119, 153, 176, 203, 70, 202, 69, 207, 74, 222, 121, 139, 134,
+            145, 168, 227, 62, 66, 198, 81, 243, 14, 18, 54, 90, 238, 41, 123,
+            141, 140, 143, 138, 133, 148, 167, 242, 13, 23, 57, 75, 221, 124,
+            132, 151, 162, 253, 28, 36, 108, 180, 199, 82, 246, 1])
+cdef int[::1] GF2int_exptable = GF2int_exptable_a
 
 # Logarithm table for the same GF parameters
-GF2int_logtable = array.array("i", [-1, 0, 25, 1, 50, 2, 26, 198, 75, 199, 27, 104, 51, 238, 223, # log(0) is undefined, it should be none, but for performance we use an array, thus we need to set an integer, here we replace None by -1
-        3, 100, 4, 224, 14, 52, 141, 129, 239, 76, 113, 8, 200, 248, 105,
-        28, 193, 125, 194, 29, 181, 249, 185, 39, 106, 77, 228, 166, 114,
-        154, 201, 9, 120, 101, 47, 138, 5, 33, 15, 225, 36, 18, 240, 130,
-        69, 53, 147, 218, 142, 150, 143, 219, 189, 54, 208, 206, 148, 19,
-        92, 210, 241, 64, 70, 131, 56, 102, 221, 253, 48, 191, 6, 139, 98,
-        179, 37, 226, 152, 34, 136, 145, 16, 126, 110, 72, 195, 163, 182,
-        30, 66, 58, 107, 40, 84, 250, 133, 61, 186, 43, 121, 10, 21, 155,
-        159, 94, 202, 78, 212, 172, 229, 243, 115, 167, 87, 175, 88, 168,
-        80, 244, 234, 214, 116, 79, 174, 233, 213, 231, 230, 173, 232, 44,
-        215, 117, 122, 235, 22, 11, 245, 89, 203, 95, 176, 156, 169, 81,
-        160, 127, 12, 246, 111, 23, 196, 73, 236, 216, 67, 31, 45, 164,
-        118, 123, 183, 204, 187, 62, 90, 251, 96, 177, 134, 59, 82, 161,
-        108, 170, 85, 41, 157, 151, 178, 135, 144, 97, 190, 220, 252, 188,
-        149, 207, 205, 55, 63, 91, 209, 83, 57, 132, 60, 65, 162, 109, 71,
-        20, 42, 158, 93, 86, 242, 211, 171, 68, 17, 146, 217, 35, 32, 46,
-        137, 180, 124, 184, 38, 119, 153, 227, 165, 103, 74, 237, 222, 197,
-        49, 254, 24, 13, 99, 140, 128, 192, 247, 112, 7])
+# Note: do NOT use cdef int* GF2int_logtable = [...], it will be faster but return wrong results!
+cdef array.array GF2int_logtable_a = array.array('i', [-1, 0, 25, 1, 50, 2, 26, 198, 75, 199, 27, 104, 51, 238, 223, # None was replaced by -1, because Cython doesn't support None nor NULL in arrays
+            3, 100, 4, 224, 14, 52, 141, 129, 239, 76, 113, 8, 200, 248, 105,
+            28, 193, 125, 194, 29, 181, 249, 185, 39, 106, 77, 228, 166, 114,
+            154, 201, 9, 120, 101, 47, 138, 5, 33, 15, 225, 36, 18, 240, 130,
+            69, 53, 147, 218, 142, 150, 143, 219, 189, 54, 208, 206, 148, 19,
+            92, 210, 241, 64, 70, 131, 56, 102, 221, 253, 48, 191, 6, 139, 98,
+            179, 37, 226, 152, 34, 136, 145, 16, 126, 110, 72, 195, 163, 182,
+            30, 66, 58, 107, 40, 84, 250, 133, 61, 186, 43, 121, 10, 21, 155,
+            159, 94, 202, 78, 212, 172, 229, 243, 115, 167, 87, 175, 88, 168,
+            80, 244, 234, 214, 116, 79, 174, 233, 213, 231, 230, 173, 232, 44,
+            215, 117, 122, 235, 22, 11, 245, 89, 203, 95, 176, 156, 169, 81,
+            160, 127, 12, 246, 111, 23, 196, 73, 236, 216, 67, 31, 45, 164,
+            118, 123, 183, 204, 187, 62, 90, 251, 96, 177, 134, 59, 82, 161,
+            108, 170, 85, 41, 157, 151, 178, 135, 144, 97, 190, 220, 252, 188,
+            149, 207, 205, 55, 63, 91, 209, 83, 57, 132, 60, 65, 162, 109, 71,
+            20, 42, 158, 93, 86, 242, 211, 171, 68, 17, 146, 217, 35, 32, 46,
+            137, 180, 124, 184, 38, 119, 153, 227, 165, 103, 74, 237, 222, 197,
+            49, 254, 24, 13, 99, 140, 128, 192, 247, 112, 7])
+cdef int[::1] GF2int_logtable = GF2int_logtable_a
 
 def rwh_primes1(n):
     # http://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n-in-python/3035188#3035188
@@ -147,18 +152,19 @@ def init_lut(generator=3, prim=0x11b, c_exp=8):
     # Construct the log table
     # Ignore the last element of the field because fields wrap back around.
     # The log of 1 can have two values: either g^0 (the exact value change depending on parameters) or it could be 255 (g^255=1) because of the wraparound
-    # Note that either way, this does not change anything any output later (ie, the ecc symbols will be the same either way).
     for i, x in enumerate(exptable[:-1]):
         logtable[x] = i
 
-    # Optimization: convert to integer arrays
+    # Optimization: convert to integer arrays (and use contiguous memory views)
     GF2int_exptable = array.array('i', exptable)
     GF2int_logtable = array.array('i', logtable)
     return GF2int_exptable, GF2int_logtable
 
 
 
-class GF2int(int):
+@cython.nonecheck(False) # Turn off nonecheck locally for the function
+@cython.boundscheck(False) # turn off boundscheck for this function
+cdef class GF2int(object): # with (int) it works, else it doesn't... # DO NOT try to inherit from int, else it will cause a MemoryError if you generate too many GF2int (because they aren't freed, they stay in memory. This is an issue with the current Cython v0.22).
     '''Instances of this object are elements of the field GF(2^p)
     Instances are integers in the range 0 to p-1
     This field is defined using the irreducable polynomial
@@ -166,7 +172,7 @@ class GF2int(int):
     and using 3 as the generator for the exponent table and log table.
     '''
 
-    __slots__ = [] # define all properties to save memory (can't add new properties at runtime) and it speeds up a lot. Here there's no property at all since it's only a type extending integers.
+    cdef int value # where we will store the int value, this is not necessary when inheriting from int
 
     # Maps integers to GF2int instances
     #cache = {}
@@ -185,63 +191,65 @@ class GF2int(int):
             # GF2int.cache[int(value)] = newval
             # return newval
 
-    def __add__(a, b):
-        '''Addition in GF(2^8) is the xor of the two'''
-        # Technical notes on why it works: In practice only one table is needed. That would be for the GP(256) multiply. Note that all arithmetic is carry-less, meaning that there is no carry-propagation.
-        # Addition and subtraction without carry is equivalent to an xor.
-        # So in GF(256), a + b and a - b are both equivalent to a xor b.
-        # For more infos, see the great post at http://stackoverflow.com/questions/8440654/addition-and-multiplication-in-a-galois-field
-        return GF2int(a ^ b)
-    __sub__ = __add__
-    __radd__ = __add__
-    __rsub__ = __add__
-    def __neg__(self):
+    #cdef object __weakref__ # explicitly enable weakref for this extension type, will self-destruct when it is no longer strongly referenced.
+
+    # store the int value, this is not necessary when inheriting from int
+    def __init__(GF2int self, value): # CAUTION: do not use __cinit__ because it will make the Python interpreter crash on decoding (but on encoding it's ok, dunno why).
+        self.value = value
+
+    def __add__(int a, int b):
+        "Addition in GF(2^8) is the xor of the two"
+        return GF2int(a ^ b) # Do NOT do int(a).__xor__(int(b)), even if it is indeed safer, it sacrifices speed too much (/3 slowdown!)
+    def __sub__(a, b): return a + b
+    def __radd__(a, b): return a + b
+    def __rsub__(a, b): return a + b
+    def __xor__(int a, int b): return GF2int(a ^ b) # important to define directly the xoring on casted ints, as to avoid infinite recursion
+
+    def __neg__(GF2int self):
         return self
 
-    def __mul__(a, b):
-        '''Multiplication in GF(2^8)'''
-        # GF(256) multiplication is also carry-less, and can be done using carry-less multiplication in a similar way with carry-less addition/subtraction. This can be done efficiently with hardware support via say Intel's CLMUL instruction set.
-        # a * b is really the same as exp(log(a) + log(b)). And because GF256 has only 256 elements, there are only GF2_charac unique powers of "x", and same for log. So these are easy to put in a lookup table.
-        if a == 0 or b == 0: # not an optimization, it's necessary because log(0) is undefined
+    def __mul__(int a, int b):
+        "Multiplication in GF(2^8)"
+        if a == 0 or b == 0:
             return GF2int(0)
-        x = GF2int_logtable[a]
-        y = GF2int_logtable[b]
-        #z = (x + y) % GF2_charac # in logarithms, addition = multiplication after exponentiation
-        # Faster implementation of finite field multiplication: z = (log[a]+log[b] & GF2_charac) + (log[a]+log[b] >> GF2_c_exp), you can replace GF2_charac by (2^m)-1 and GF2_c_exp by m (eg: for GF(2^16), you'd get 65535 and 16). This optimization was shown in paper: "Fast software implementation of finite field operations", Cheng Huang and Lihao Xu, Washington University in St. Louis, Tech. Rep (2003).
-        z = (x + y)
-        z = (z & GF2_charac) + (z >> GF2_c_exp)
+        cdef int x = GF2int_logtable[a]
+        cdef int y = GF2int_logtable[b]
+        cdef int z = (x + y) % GF2_charac
         return GF2int(GF2int_exptable[z])
-    __rmul__ = __mul__
+    def __rmul__(a, b): return a * b
 
-    def __pow__(self, power, modulo=None):
-        # TODO: maybe try to implement the fast exponentiation here (implement binary exponentiation in Galois Fields that uses Montgomery Multiplication and using normal basis): http://stackoverflow.com/a/11640271/1121352  Algorithms for exponentiation in finite fields, by Shuhong Gao, Joachim Von Zur Gathen, Daniel Panario and Victor Shoup
-        if isinstance(power, GF2int):
-            raise TypeError("Raising a Field element to another Field element is not defined. power must be a regular integer")
-        x = GF2int_logtable[self]
-        z = (x * power) % GF2_charac
+    def __pow__(int self, int power, modulo):
+        #if isinstance(power, GF2int): # no need anymore because int power types correctly power so that it's always a regular integer.
+            #raise TypeError("Raising a Field element to another Field element is not defined. power must be a regular integer")
+        cdef int x = GF2int_logtable[self]
+        cdef int z = (x * power) % GF2_charac
         return GF2int(GF2int_exptable[z])
 
-    def inverse(self):
-        e = GF2int_logtable[self]
+    cpdef inverse(GF2int self):
+        cdef int e = GF2int_logtable[<int>self]
         return GF2int(GF2int_exptable[GF2_charac - e])
 
-    def __div__(self, other):
+    def __div__(int self, int other):
         #return self * GF2int(other).inverse() # self / other = self * inv(other) . This is equivalent to what is below, but 2x slower.
         if self == 0 or other == 0:
             return GF2int(0)
-        x = GF2int_logtable[self]
-        y = GF2int_logtable[other]
-        z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
+        cdef int x = GF2int_logtable[self]
+        cdef int y = GF2int_logtable[other]
+        cdef int z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
         return GF2int(GF2int_exptable[z])
 
-    def __rdiv__(self, other):
-        return self.inverse() * other
+    def __rdiv__(int self, int other):
+        #return self.inverse() * other
+        return GF2int.__div__(other, self)
 
-    def __repr__(self):
+    def __repr__(GF2int self):
         n = self.__class__.__name__
         return "%s(%r)" % (n, int(self))
 
-    def _to_binpoly(x):
+    def __str__(GF2int self):
+        return "%i" % int(self)
+
+    cpdef _to_binpoly(GF2int x):
         '''Convert a Galois Field's number into a nice polynomial'''
         if x <= 0: return "0"
         b = 1 # init to 2^0 = 1
@@ -256,7 +264,7 @@ class GF2int(int):
             i = i+1 # increment to compute the next power of 2
         return " + ".join(["x^%i" % y for y in c[::-1]]) # print a nice binary polynomial
 
-    def multiply(a, b, prim=0x11b, field_charac_full=256):
+    cpdef multiply(GF2int x, int y, int prim=0x11b, int field_charac_full=256):
         '''A slow multiply method. This method gives the same results as the
         other __mul__ method but without needing precomputed tables,
         thus it can be used to generate those tables.
@@ -270,8 +278,8 @@ class GF2int(int):
         '''
 
         r = 0
-        a = int(a)
-        b = int(b)
+        a = int(x)
+        b = int(y)
         while b: # while b is not 0
             if b & 1: r = r ^ a if prim > 0 else r + a # b is odd, then add the corresponding a to r (the sum of all a's corresponding to odd b's will give the final product). Note that since we're in GF(2), the addition is in fact an XOR (very important because in GF(2) the multiplication and additions are carry-less, thus it changes the result!).
             b = b >> 1 # equivalent to b // 2
@@ -285,7 +293,7 @@ class GF2int(int):
         This is the form you will most often see in academic literature, by using the standard carry-less multiplication + modular reduction using an irreducible prime polynomial.'''
 
         ### Define bitwise carry-less operations as inner functions ###
-        def cl_mult(x,y):
+        def cl_mult(x, y):
             '''Bitwise carry-less multiplication on integers'''
             z = 0
             i = 0
@@ -319,10 +327,49 @@ class GF2int(int):
 
         ### Main GF multiplication routine ###
 
+        a = int(x)
+        b = int(y)
         # Multiply the gf numbers
-        result = cl_mult(x,y)
+        result = cl_mult(a,b)
         # Then do a modular reduction (ie, remainder from the division) with an irreducible primitive polynomial so that it stays inside GF bounds
         if prim > 0:
             result = cl_div(result, prim)
 
         return result
+
+
+
+############ INT AND INDEX REIMPLEMENTATION ###########
+# The following magic methods definitions are only necessary  because we do not inherit from int. When Cython will fix the issue with Extension Types inheriting from ints, these methods can be removed.
+
+    def __index__(GF2int self):
+        return self.value
+    
+    def __hash__(GF2int self): # used for quick key comparison in dicts
+        return self.value
+
+    def __int__(GF2int self):
+        return self.value
+    
+    def __nonzero__(GF2int self): # eg, when using "not a"
+        return self.value != 0
+
+    def __richcmp__(GF2int self, other, int op): # it's necessary to implement explicitly the behavior when comparing because we do not inherit from int...
+        # 0: <
+        # 2: ==
+        # 4: >
+        # 1: <=
+        # 3: !=
+        # 5: >=
+        if op == 0:
+            return int(self) < int(other)
+        elif op == 1:
+            return int(self) <= int(other)
+        elif op == 2:
+            return int(self) == int(other)
+        elif op == 3:
+            return int(self) != int(other)
+        elif op == 4:
+            return int(self) > int(other)
+        elif op == 5:
+            return int(self) >= int(other)
