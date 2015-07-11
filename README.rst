@@ -5,6 +5,8 @@ Written from scratch by Andrew Brown <brownan@gmail.com> <brownan@cs.duke.edu>
 (c) 2010.
 Updated by Stephen Larroque <LRQ3000@gmail.com> in 2015.
 
+Licensed under the MIT License.
+
 I wrote this code as an exercise in implementing the Reed-Solomon error
 correction algorithm. This code is published in the hopes that it will be
 useful for others in learning how the algorithm works. (Nothing helps me learn
