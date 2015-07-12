@@ -1,9 +1,13 @@
 import unittest
 import itertools
 
-from cff import GF2int, init_lut, find_prime_polynomials
+from ff import GF2int, init_lut, find_prime_polynomials
 
-class cTestGF2int(unittest.TestCase):
+class TestGF2int(unittest.TestCase):
+    def setUp(self):
+        # (Re) initialize the GF tables to avoid conflicts with previously ran tests
+        init_lut(generator=3, prim=0x11b, c_exp=8)
+
     def test_arithmetic(self):
         a = GF2int(3)
         b = GF2int(9)
@@ -30,9 +34,9 @@ class cTestGF2int(unittest.TestCase):
         self.assertEqual(9 / a, 7)
         self.assertEqual(b / 3, 7)
 
-        #self.assertRaises(Exception, lambda: b**a)
+        self.assertRaises(Exception, lambda: b**a)
         self.assertEqual(b**3, 127)
-        #self.assertRaises(Exception, lambda: a**b)
+        self.assertRaises(Exception, lambda: a**b)
         self.assertEqual(a**9, 46)
         self.assertEqual(a**5, 51)
         self.assertEqual(a**1000, 148) # big overflow to see if it correctly does a modular reduction

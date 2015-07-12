@@ -1,12 +1,16 @@
 import unittest
 
-from polynomial import Polynomial
-from ff import GF2int
+from cpolynomial import Polynomial
+from cff import GF2int, init_lut
 
-class TestGFPoly(unittest.TestCase):
+class cTestGFPoly(unittest.TestCase):
     """Tests that the Polynomial class works when given GF2int objects
     instead of regular integers
     """
+    def setUp(self):
+        # (Re) initialize the GF tables to avoid conflicts with previously ran tests
+        init_lut(generator=3, prim=0x11b, c_exp=8)
+
     def test_add(self):
         one = Polynomial(map(GF2int,     [8,3,5,1]))
         two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
@@ -125,7 +129,7 @@ class TestGFPoly(unittest.TestCase):
 
 
 
-class TestPolynomial(unittest.TestCase):
+class cTestPolynomial(unittest.TestCase):
     def test_add_1(self):
         one = Polynomial([2,4,7,3])
         two = Polynomial([5,2,4,2])
