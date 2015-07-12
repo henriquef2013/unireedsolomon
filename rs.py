@@ -5,6 +5,8 @@
 # Copyright (c) 2015 Stephen Larroque <LRQ3000@gmail.com>
 # See LICENSE.txt for license terms
 
+from _compat import _range, _str
+
 try: # Cython implementation import. This should be a bit faster than using PyPy with the pure-python implementation.
     from cff import GF2int, init_lut
     from cpolynomial import Polynomial
@@ -90,16 +92,16 @@ class RSCoder(object):
         # g(x) = (x-α^1)(x-α^2)...(x-α^(n-k))
         # α is 3, a generator for GF(2^8)
         g = Polynomial([GF2int(1)])
-        for i in xrange(0, 2): self.g[i] = g
-        for i in xrange(0,n):
+        for i in _range(0, 2): self.g[i] = g
+        for i in _range(0,n):
             p = Polynomial([GF2int(1), GF2int(self.generator)**(i+fcr)])
             g = g * p
             self.g[n-(i+1)] = g # copy.deepcopy(g)
 
         # h(x) = (x-α^(n-k+1))...(x-α^n)
         #h = Polynomial([GF2int(1)])
-        #for i in xrange(n-1, n+1): self.h[i] = h
-        #for i in xrange(n, 0, -1):
+        #for i in _range(n-1, n+1): self.h[i] = h
+        #for i in _range(n, 0, -1):
         #    p = Polynomial([GF2int(1), GF2int(self.generator)**(i+fcr)])
         #    h = h * p
         #    self.h[n-i+1] = h
@@ -130,7 +132,7 @@ class RSCoder(object):
                 len(message)))
 
         # Encode message as a polynomial:
-        if isinstance(message, basestring):
+        if isinstance(message, _str):
             m = Polynomial([GF2int(ord(x)) for x in message])
             #m = Polynomial(map(GF2int, map(ord,message)))
             #m = Polynomial([GF2int(x) for x in array.array('b', message).tolist()]) # equivalent to: Polynomial([GF2int(ord(x)) for x in message])
@@ -166,7 +168,7 @@ class RSCoder(object):
                 len(message)))
 
         # Encode message as a polynomial:
-        if isinstance(message, basestring):
+        if isinstance(message, _str):
             m = Polynomial([GF2int(ord(x)) for x in message])
         else:
             m = Polynomial([GF2int(x) for x in message])
@@ -198,7 +200,7 @@ class RSCoder(object):
         #h = self.h[k]
         g = self.g[k]
 
-        if isinstance(code, basestring):
+        if isinstance(code, _str):
             c = Polynomial([GF2int(ord(x)) for x in code])
         else:
             c = Polynomial([GF2int(x) for x in code])
@@ -220,7 +222,7 @@ class RSCoder(object):
         g = self.g[k]
 
         # Turn r into a polynomial
-        if isinstance(r, basestring):
+        if isinstance(r, _str):
             r = Polynomial([GF2int(ord(x)) for x in r])
         else:
             r = Polynomial([GF2int(x) for x in r])
@@ -260,7 +262,7 @@ class RSCoder(object):
 #                return r[:-(n-k)].lstrip("\0"), r[-(n-k):]
 
         # Turn r into a polynomial
-        if isinstance(r, basestring):
+        if isinstance(r, _str):
             rp = Polynomial([GF2int(ord(x)) for x in r])
         else:
             rp = Polynomial([GF2int(x) for x in r])
@@ -328,7 +330,7 @@ class RSCoder(object):
         # Note that an alternative would be to compute the error-spectrum polynomial E(x) which satisfies E(x)*Sigma(x) = 0 (mod x^n - 1) = Omega(x)(x^n - 1) -- see Blahut, Algebraic codes for data transmission
         Elist = [GF2int(0)] * self.gf2_charac
         if len(Y) >= len(j): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-            for i in xrange(self.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+            for i in _range(self.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
                 if i in j:
                     Elist[i] = Y[j.index(i)]
             E = Polynomial( Elist[::-1] ) # reverse the list because we used the coefficient degrees (j) instead of the error positions
@@ -378,7 +380,7 @@ class RSCoder(object):
 #                return r[:-(n-k)].lstrip("\0"), r[-(n-k):]
 
         # Turn r into a polynomial
-        if isinstance(r, basestring):
+        if isinstance(r, _str):
             rp = Polynomial([GF2int(ord(x)) for x in r])
         else:
             rp = Polynomial([GF2int(x) for x in r])
@@ -439,7 +441,7 @@ class RSCoder(object):
         # Put the error and locations together to form the error polynomial
         # Note that an alternative would be to compute the error-spectrum polynomial E(x) which satisfies E(x)*Sigma(x) = 0 (mod x^n - 1) = Omega(x)(x^n - 1) -- see Blahut, Algebraic codes for data transmission
         Elist = [GF2int(0)] * self.gf2_charac
-        for i in xrange(self.gf2_charac):
+        for i in _range(self.gf2_charac):
             if i in j:
                 Elist[i] = Y[j.index(i)]
         E = Polynomial( Elist[::-1] )
@@ -473,13 +475,13 @@ class RSCoder(object):
         if not k: k = self.k
         # Note the + [GF2int(0)] : we add a 0 coefficient for the lowest degree (the constant). This effectively shifts the syndrome, and will shift every computations depending on the syndromes (such as the errors locator polynomial, errors evaluator polynomial, etc. but not the errors positions).
         # This is not necessary as anyway syndromes are defined such as there are only non-zero coefficients (the only 0 is the shift of the constant here) and subsequent computations will/must account for the shift by skipping the first iteration (eg, the often seen range(1, n-k+1)), but you can also avoid prepending the 0 coeff and adapt every subsequent computations to start from 0 instead of 1.
-        return Polynomial( [r.evaluate( GF2int(self.generator)**(l+self.fcr) ) for l in xrange(n-k-1, -1, -1)] + [GF2int(0)], keep_zero=True ) # IMPORTANT: for the syndrome, we want to keep all terms, even null ones! This is because the length of the syndrome gives us a precious information to compute the syndrome shift in Berlekamp-Massey and other places.
+        return Polynomial( [r.evaluate( GF2int(self.generator)**(l+self.fcr) ) for l in _range(n-k-1, -1, -1)] + [GF2int(0)], keep_zero=True ) # IMPORTANT: for the syndrome, we want to keep all terms, even null ones! This is because the length of the syndrome gives us a precious information to compute the syndrome shift in Berlekamp-Massey and other places.
 
         # s[l] is the received codeword evaluated at α^l for 1 <= l <= s
         # α in this implementation is 3
         #s = [0] * (n-k+1)
         #s[-1] = GF2int(0) # s[0] is 0 (coefficient of z^0)
-        #for l in xrange(1, n-k+1):
+        #for l in _range(1, n-k+1):
         #    s[-(l+1)] = r.evaluate( GF2int(self.generator)**l )
 
         # Now build a polynomial out of all our s[l] values
@@ -575,7 +577,7 @@ class RSCoder(object):
         s2 = ONE + s
 
         # Iteratively compute the polynomials n-k-erasures_count times. The last ones will be correct (since the algorithm refines the error/errata locator polynomial iteratively depending on the discrepancy, which is kind of a difference-from-correctness measure).
-        for l in xrange(0, n-k-erasures_count): # skip the first erasures_count iterations because we already computed the partial errata locator polynomial (by initializing with the erasures locator polynomial)
+        for l in _range(0, n-k-erasures_count): # skip the first erasures_count iterations because we already computed the partial errata locator polynomial (by initializing with the erasures locator polynomial)
             K = erasures_count+l+synd_shift # skip the FIRST erasures_count iterations (not the last iterations, that's very important!)
 
             # Goal for each iteration: Compute sigma[l+1] and omega[l+1] such that
@@ -673,7 +675,7 @@ class RSCoder(object):
         s2 = ONE+s
 
         # Iteratively compute the polynomials n-k-erasures_count times. The last ones will be correct (since the algorithm refines the error/errata locator polynomial iteratively depending on the discrepancy, which is kind of a difference-from-correctness measure).
-        for l in xrange(n-k-erasures_count): # skip the first erasures_count iterations because we already computed the partial errata locator polynomial (by initializing with the erasures locator polynomial)
+        for l in _range(n-k-erasures_count): # skip the first erasures_count iterations because we already computed the partial errata locator polynomial (by initializing with the erasures locator polynomial)
             K = erasures_count+l+synd_shift # skip the FIRST erasures_count iterations (not the last iterations, that's very important!)
 
             # Goal for each iteration: Compute sigma[l+1] and omega[l+1] such that
@@ -768,7 +770,7 @@ class RSCoder(object):
         j = []
         p = GF2int(self.generator)
         # Try for each possible location
-        for l in xrange(1, self.gf2_charac+1): # range 1:256 is important: if you use range 0:255, if the last byte of the ecc symbols is corrupted, it won't be correctable! You need to use the range 1,256 to include this last byte.
+        for l in _range(1, self.gf2_charac+1): # range 1:256 is important: if you use range 0:255, if the last byte of the ecc symbols is corrupted, it won't be correctable! You need to use the range 1,256 to include this last byte.
             #l = (i+self.fcr)
             # These evaluations could be more efficient, but oh well
             if sigma.evaluate( p**l ) == 0: # If it's 0, then bingo! It's an error location
@@ -793,11 +795,11 @@ class RSCoder(object):
         X = []
         j = []
         p = GF2int(self.generator)
-        if not hasattr(self, 'const_poly'): self.const_poly = [GF2int(self.generator)**(i+self.fcr) for i in xrange(self.gf2_charac, -1, -1)] # constant polynomial that will allow us to update the previous polynomial evaluation to get the next one
+        if not hasattr(self, 'const_poly'): self.const_poly = [GF2int(self.generator)**(i+self.fcr) for i in _range(self.gf2_charac, -1, -1)] # constant polynomial that will allow us to update the previous polynomial evaluation to get the next one
         const_poly = self.const_poly # caching for more efficiency since it never changes
         ev_poly, ev = sigma.evaluate_array( p**1 ) # compute the first polynomial evaluation
         # Try for each possible location
-        for l in xrange(1, self.gf2_charac+1): # range 1:256 is important: if you use range 0:255, if the last byte of the ecc symbols is corrupted, it won't be correctable! You need to use the range 1,256 to include this last byte.
+        for l in _range(1, self.gf2_charac+1): # range 1:256 is important: if you use range 0:255, if the last byte of the ecc symbols is corrupted, it won't be correctable! You need to use the range 1,256 to include this last byte.
             #l = (i+self.fcr)
 
             # Check if it's a root for the polynomial
@@ -813,7 +815,7 @@ class RSCoder(object):
             # we simply multiply each term[k] with alpha^k (where here alpha = p = GF2int(generator)).
             # For more info, see the presentation by Andrew Brown, or this one: http://web.ntpu.edu.tw/~yshan/BCH_decoding.pdf
             # TODO: parallelize this loop
-            for i in xrange(1, len(ev_poly)+1): # TODO: maybe the fcr != 1 fix should be put here?
+            for i in _range(1, len(ev_poly)+1): # TODO: maybe the fcr != 1 fix should be put here?
                 ev_poly[-i] *= const_poly[-i]
             # Compute the new evaluation by just summing
             ev = sum(ev_poly)
@@ -829,7 +831,7 @@ class RSCoder(object):
         p = GF2int(self.generator)
         # Normally we should try all 2^8 possible values, but here we optimize to just check the interesting symbols
         # This also allows to accept messages where n > 2^8.
-        for l in xrange(n):
+        for l in _range(n):
             #l = (i+self.fcr)
             # These evaluations could be more efficient, but oh well
             if sigma.evaluate( p**(-l) ) == 0: # If it's 0, then bingo! It's an error location
@@ -861,7 +863,7 @@ class RSCoder(object):
             # Compute the sequence product and multiply its inverse in
             prod = GF2int(1) # just to init the product (1 is the neutral term for multiplication)
             Xl_inv = Xl.inverse()
-            for ji in xrange(t): # do not change to xrange(len(X)) as can be seen in some papers, it won't give the correct result! (sometimes yes, but not always)
+            for ji in _range(t): # do not change to _range(len(X)) as can be seen in some papers, it won't give the correct result! (sometimes yes, but not always)
                 if ji == l:
                     continue
                 if ji < len(X):
@@ -890,7 +892,7 @@ class RSCoder(object):
 
             # Compute the formal derivative of the error locator polynomial (see Blahut, Algebraic codes for data transmission, pp 196-197).
             # the formal derivative of the errata locator is used as the denominator of the Forney Algorithm, which simply says that the ith error value is given by error_evaluator(gf_inverse(Xi)) / error_locator_derivative(gf_inverse(Xi)). See Blahut, Algebraic codes for data transmission, pp 196-197.
-            sigma_prime_tmp = [1 - Xl_inv * X[j] for j in xrange(Xlength) if j != l] # TODO? maybe a faster way would be to precompute sigma_prime = sigma[len(sigma) & 1:len(sigma):2] and then just do sigma_prime.evaluate(X[j]) ? (like in reedsolo.py)
+            sigma_prime_tmp = [1 - Xl_inv * X[j] for j in _range(Xlength) if j != l] # TODO? maybe a faster way would be to precompute sigma_prime = sigma[len(sigma) & 1:len(sigma):2] and then just do sigma_prime.evaluate(X[j]) ? (like in reedsolo.py)
             # compute the product
             sigma_prime = 1
             for coef in sigma_prime_tmp:

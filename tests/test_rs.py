@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from _compat import _range, _izip
+
 import unittest
 import itertools
 import hashlib
@@ -171,7 +173,7 @@ class TestRSdecodinginside(unittest.TestCase):
         The trick here is that the errata locator should always be the same, whether it's solely computed from erasures using the analytical equation, or using Berlekamp-Massey, it doesn't matter.
         '''
         
-        orig_mes = bytearray("hello world")
+        orig_mes = bytearray(b"hello world")
         n = len(orig_mes)*2
         k = len(orig_mes)
 
@@ -187,11 +189,11 @@ class TestRSdecodinginside(unittest.TestCase):
         # Encode the message and tamper it
         rsman = rs.RSCoder(n, k, fcr=fcr, prim=prim, generator=generator, c_exp=c_exponent)
         rmesecc = bytearray(rsman.encode(orig_mes, k=k))
-        rmesecc_orig = bytearray(rmesecc)
+        rmesecc_orig = rmesecc[:] # make a copy to check later against the original message (only objective way to check if the message was successfully decoded)
         rmesecc[:erasenb] = "\x00" * erasenb
 
         # Prepare the erasures positions
-        erasures_pos = [x for x in xrange(len(rmesecc)) if rmesecc[x] == 0]
+        erasures_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == 0]
 
         ####
 
@@ -230,7 +232,7 @@ class TestRSdecodinginside(unittest.TestCase):
 
     def test_synd_shift(self):
         '''Test if syndrome computation do not trim automatically the 0 coefficients. This is an edge case (that sometimes the syndromes generate leading 0 coefficients), but it's very important that we don't trim them (at least for the syndromes polynomial) because we need to know the full length of the syndromes polynomial to calculate the correct syndrome shift in Berlekamp-Massey'''
-        orig_mes = bytearray("hello world")
+        orig_mes = bytearray(b"hello world")
         n = len(orig_mes)*2
         k = len(orig_mes)
 
@@ -310,11 +312,11 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
 
     def test_main(self):
         def cartesian_product_dict_items(dicts):
-            return (dict(itertools.izip(dicts, x)) for x in itertools.product(*dicts.itervalues()))
+            return (dict(_izip(dicts, x)) for x in itertools.product(*dicts.values()))
 
         debugg = False # if one or more tests don't pass, you can enable this flag to True to get verbose output to debug
 
-        orig_mes = bytearray("hello world")
+        orig_mes = bytearray(b"hello world")
         n = len(orig_mes)*2
         k = len(orig_mes)
         nsym = n-k
@@ -337,7 +339,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
         results_rs = []
 
         it = 0
-        for p in xrange(params["count"]):
+        for p in _range(params["count"]):
             fcr = params["fcr"][p]
             prim = params["prim"][p]
             generator = params["generator"][p]
@@ -360,7 +362,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                 rsman = rs.RSCoder(n, k, fcr=fcr, prim=prim, generator=generator, c_exp=c_exponent)
                 # Encode the message
                 rmesecc = bytearray(rsman.encode(orig_mes, k=k))
-                rmesecc_orig = bytearray(rmesecc) # make a copy of the original message to check later if fully corrected (because the syndrome may be wrong sometimes)
+                rmesecc_orig = rmesecc[:] # make a copy of the original message to check later if fully corrected (because the syndrome may be wrong sometimes)
                 # Tamper the message
                 if erratanb > 0:
                     if errmode == 1:
@@ -375,7 +377,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                         print("Removed slice:", list(rmesecc[sl]), rmesecc[sl])
                     rmesecc[sl] = "\x00" * erratanb
                 # Generate the erasures positions (if any)
-                erase_pos = [x for x in xrange(len(rmesecc)) if rmesecc[x] == 0]
+                erase_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == 0]
                 if errnb > 0: erase_pos = erase_pos[:-errnb] # remove the errors positions (must not be known by definition)
                 if debugg:
                     print("erase_pos", erase_pos)
@@ -427,7 +429,7 @@ class TestRSFIXME(unittest.TestCase):
         http://www.ifp.uiuc.edu/~sarwate/malfunction.ps and
         http://www.ifp.uiuc.edu/~sarwate/pubs/Sarwate90Decoder.pdf
         '''
-        mes = bytearray('hello world')
+        mes = bytearray(b'hello world')
         n = len(mes)*2
         k = len(mes)
         erase_char = "\x00"
@@ -441,10 +443,10 @@ class TestRSFIXME(unittest.TestCase):
         rsman = rs.RSCoder(n, k) # every set of parameters for generator/prim/fcr will give the same issue (even if the output is different, but in the end, the message won't be decoded correctly but check won't detect the error)
         # encode the message
         rmesecc = bytearray(rsman.encode(mes, k=k))
-        rmesecc_orig = bytearray(rmesecc) # copy the original untampered message for later checking
+        rmesecc_orig = rmesecc[:] # copy the original untampered message for later checking
         # tamper the message
         rmesecc[istart:istart+erasenb] = erase_char * erasenb # introduce erratas
-        erase_pos = [x for x in xrange(len(rmesecc)) if rmesecc[x] == ord(erase_char)] # compute erasures positions
+        erase_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == ord(erase_char)] # compute erasures positions
         if errnb > 0: erase_pos = erase_pos[:-errnb] # remove the errors positions (so we only have erasures)
         # decode the message
         rmes, recc = rsman.decode(rmesecc, k=k, erasures_pos=erase_pos)

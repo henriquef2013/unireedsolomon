@@ -1,3 +1,5 @@
+from _compat import xrange
+
 import unittest
 import itertools
 

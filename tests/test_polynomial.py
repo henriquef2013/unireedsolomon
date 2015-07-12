@@ -1,3 +1,5 @@
+from _compat import _range
+
 import unittest
 
 from polynomial import Polynomial
