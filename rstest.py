@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import unittest
 import itertools
 import hashlib
@@ -349,9 +351,9 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                 
                 it += 1
                 if debugg:
-                    print "it ", it
-                    print "param", p
-                    print case
+                    print("it ", it)
+                    print("param", p)
+                    print(case)
 
                 # BROWNANRS
                 # Init the RS codec
@@ -370,15 +372,15 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                     elif errmode == 4:
                         sl = slice(-istart-erratanb, None)
                     if debugg:
-                        print "Removed slice:", list(rmesecc[sl]), rmesecc[sl]
+                        print("Removed slice:", list(rmesecc[sl]), rmesecc[sl])
                     rmesecc[sl] = "\x00" * erratanb
                 # Generate the erasures positions (if any)
                 erase_pos = [x for x in xrange(len(rmesecc)) if rmesecc[x] == 0]
                 if errnb > 0: erase_pos = erase_pos[:-errnb] # remove the errors positions (must not be known by definition)
                 if debugg:
-                    print "erase_pos", erase_pos
-                    print "coef_pos", [len(rmesecc) - 1 - pos for pos in erase_pos]
-                    print "Errata total: ", erratanb-errnb + errnb*2, " -- Correctable? ", (erratanb-errnb + errnb*2 <= nsym)
+                    print("erase_pos", erase_pos)
+                    print("coef_pos", [len(rmesecc) - 1 - pos for pos in erase_pos])
+                    print("Errata total: ", erratanb-errnb + errnb*2, " -- Correctable? ", (erratanb-errnb + errnb*2 <= nsym))
                 # Decoding the corrupted codeword
                 # -- fast method
                 try:
@@ -390,16 +392,16 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                     results_br.append(False)
                     results_br.append(False)
                     if debugg:
-                        print "===="
-                        print "ERROR! Details:"
-                        print "param", p
-                        print case
-                        print erase_pos
-                        print "original_msg", rmesecc_orig
-                        print "tampered_msg", rmesecc
-                        print "decoded_msg", rmes+recc
-                        print "checks: ", rsman.check(rmes + recc, k=k), rmesecc_orig == (rmes+recc)
-                        print "===="
+                        print("====")
+                        print("ERROR! Details:")
+                        print("param", p)
+                        print(case)
+                        print(erase_pos)
+                        print("original_msg", rmesecc_orig)
+                        print("tampered_msg", rmesecc)
+                        print("decoded_msg", rmes+recc)
+                        print("checks: ", rsman.check(rmes + recc, k=k), rmesecc_orig == (rmes+recc))
+                        print("====")
                         raise exc
                 # -- normal method
                 try:
@@ -410,7 +412,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                     results_br.append(False)
                     results_br.append(False)
 
-                if debugg: print "-----"
+                if debugg: print("-----")
 
         self.assertTrue(results_br.count(True) == len(results_br))
 

@@ -890,8 +890,12 @@ class RSCoder(object):
 
             # Compute the formal derivative of the error locator polynomial (see Blahut, Algebraic codes for data transmission, pp 196-197).
             # the formal derivative of the errata locator is used as the denominator of the Forney Algorithm, which simply says that the ith error value is given by error_evaluator(gf_inverse(Xi)) / error_locator_derivative(gf_inverse(Xi)). See Blahut, Algebraic codes for data transmission, pp 196-197.
-            sigma_prime = [1 - Xl_inv * X[j] for j in xrange(Xlength) if j != l] # TODO? maybe a faster way would be to precompute sigma_prime = sigma[len(sigma) & 1:len(sigma):2] and then just do sigma_prime.evaluate(X[j]) ? (like in reedsolo.py)
-            sigma_prime = reduce(mul, sigma_prime, 1) # compute the product
+            sigma_prime_tmp = [1 - Xl_inv * X[j] for j in xrange(Xlength) if j != l] # TODO? maybe a faster way would be to precompute sigma_prime = sigma[len(sigma) & 1:len(sigma):2] and then just do sigma_prime.evaluate(X[j]) ? (like in reedsolo.py)
+            # compute the product
+            sigma_prime = 1
+            for coef in sigma_prime_tmp:
+                sigma_prime = sigma_prime * coef
+            # equivalent to: sigma_prime = functools.reduce(mul, sigma_prime, 1)
 
             # Compute Yl
             # This is a more faithful translation of the theoretical equation contrary to the old forney method. Here it is exactly copy/pasted from the included presentation decoding_rs.pdf: Yl = omega(Xl.inverse()) / prod(1 - Xj*Xl.inverse()) for j in len(X) (in the paper it's for j in s, but it's useless when len(X) < s because we compute neutral terms 1 for nothing, and wrong when correcting more than s erasures or erasures+errors since it prevents computing all required terms).
