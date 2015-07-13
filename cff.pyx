@@ -231,7 +231,7 @@ cdef class GF2int(object): # with (int) it works, else it doesn't... # DO NOT tr
         cdef int e = GF2int_logtable[<int>self]
         return GF2int(GF2int_exptable[GF2_charac - e])
 
-    def __div__(int self, int other):
+    def __truediv__(int self, int other): # for Python 3.x
         #return self * GF2int(other).inverse() # self / other = self * inv(other) . This is equivalent to what is below, but 2x slower.
         if self == 0 or other == 0:
             return GF2int(0)
@@ -239,14 +239,20 @@ cdef class GF2int(object): # with (int) it works, else it doesn't... # DO NOT tr
         cdef int y = GF2int_logtable[other]
         cdef int z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
         return GF2int(GF2int_exptable[z])
-    def __floordiv__(self, other): return self.__div__(other)
-    def __truediv__(self, other): return self.__div__(other)
+    def __floordiv__(self, other): return self.__truediv__(other)
+    def __div__(self, other): # for Python 2.x
+        if self == 0 or other == 0:
+            return GF2int(0)
+        cdef int x = GF2int_logtable[self]
+        cdef int y = GF2int_logtable[other]
+        cdef int z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
+        return GF2int(GF2int_exptable[z])
 
-    def __rdiv__(int self, int other):
+    def __rtruediv__(int self, int other):
         #return self.inverse() * other
-        return GF2int.__div__(other, self)
-    def __rfloordiv__(self, other): return self.__rdiv__(other)
-    def __rtruediv__(self, other): return self.__rdiv__(other)
+        return GF2int.__truediv__(other, self)
+    def __rfloordiv__(self, other): return GF2int.__truediv__(other, self)
+    def __rdiv__(self, other): return GF2int.__truediv__(other, self) # for Python 2.x
 
     def __repr__(GF2int self):
         n = self.__class__.__name__
