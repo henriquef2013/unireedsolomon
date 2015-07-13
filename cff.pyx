@@ -240,7 +240,7 @@ cdef class GF2int(object): # with (int) it works, else it doesn't... # DO NOT tr
         cdef int z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
         return GF2int(GF2int_exptable[z])
     def __floordiv__(self, other): return self.__truediv__(other)
-    def __div__(self, other): # for Python 2.x
+    def __div__(int self, int other): # for Python 2.x
         if self == 0 or other == 0:
             return GF2int(0)
         cdef int x = GF2int_logtable[self]
