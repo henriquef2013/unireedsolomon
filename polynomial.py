@@ -12,7 +12,7 @@ from _compat import _range, _StringIO, _izip
 class Polynomial(object):
     '''Completely general polynomial class.
     
-    Polynomial objects are immutable.
+    Polynomial objects are mutable.
     
     Implementation note: while this class is mostly agnostic to the type of
     coefficients used (as long as they support the usual mathematical
@@ -60,14 +60,14 @@ class Polynomial(object):
             self.coefficients = coefficients
         elif sparse:
             # Polynomial(x32=...)
-            powers = sparse.keys()
+            powers = list(sparse.keys())
             powers.sort(reverse=1)
             # Not catching possible exceptions from the following line, let
             # them bubble up.
             highest = int(powers[0][1:])
             coefficients = [0] * (highest+1)
 
-            for power, coeff in sparse.iteritems():
+            for power, coeff in sparse.items():
                 power = int(power[1:])
                 coefficients[highest - power] = coeff
 

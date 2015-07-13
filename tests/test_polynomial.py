@@ -1,9 +1,10 @@
-from _compat import _range
-
 import unittest
 
 from polynomial import Polynomial
 from ff import GF2int, init_lut
+
+def map_GF2int(L):
+    return list(map(GF2int, L))
 
 class TestGFPoly(unittest.TestCase):
     """Tests that the Polynomial class works when given GF2int objects
@@ -14,28 +15,28 @@ class TestGFPoly(unittest.TestCase):
         init_lut(generator=3, prim=0x11b, c_exp=8)
 
     def test_add(self):
-        one = Polynomial(map(GF2int,     [8,3,5,1]))
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([8,3,5,1]))
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
 
         r = one + two
 
         self.assertEqual(list(r.coefficients), [5,3,9,2,3,9])
 
     def test_sub(self):
-        one = Polynomial(map(GF2int,     [8,3,5,1]))
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([8,3,5,1]))
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
         r = one - two
         self.assertEqual(list(r.coefficients), [5,3,9,2,3,9])
 
     def test_mul(self):
-        one = Polynomial(map(GF2int,     [8,3,5,1]))
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([8,3,5,1]))
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
         r = one * two
         self.assertEqual(list(r.coefficients), [40,23,28,1,53,78,7,46,8])
 
     def test_mul_at(self):
-        one = Polynomial(map(GF2int, [2,4,7,3]))
-        two = Polynomial(map(GF2int, [5,2,4,2]))
+        one = Polynomial(map_GF2int([2,4,7,3]))
+        two = Polynomial(map_GF2int([5,2,4,2]))
         k = 3
 
         r1 = one * two
@@ -44,7 +45,7 @@ class TestGFPoly(unittest.TestCase):
         self.assertEqual(r1.get_coefficient(k), r2)
 
     def test_scale(self):
-        one = Polynomial(map(GF2int, [2,14,7,3]))
+        one = Polynomial(map_GF2int([2,14,7,3]))
         scalar = 12
 
         r = one.scale(12)
@@ -52,8 +53,8 @@ class TestGFPoly(unittest.TestCase):
         self.assertEqual(list(r.coefficients), [24, 72, 36, 20])
 
     def test_div(self):
-        one = Polynomial(map(GF2int,     [8,3,5,1]))
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([8,3,5,1]))
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
         q, r = divmod(two,one)
         self.assertEqual(list(q.coefficients), [101, 152, 11])
         self.assertEqual(list(r.coefficients), [183, 185, 3])
@@ -62,8 +63,8 @@ class TestGFPoly(unittest.TestCase):
         self.assertEqual(q*one + r, two)
 
     def test_div_fast(self):
-        one = Polynomial(map(GF2int,     [8,3,5,1]))
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([8,3,5,1]))
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
 
         q, r = two._fastdivmod(one)
         self.assertEqual(list(q.coefficients), [101, 152, 11])
@@ -73,8 +74,8 @@ class TestGFPoly(unittest.TestCase):
         self.assertEqual(q*one + r, two)
 
     def test_div_gffast(self):
-        one = Polynomial(map(GF2int,     [1,3,5,1])) # must be monic! (because the function is optimized for monic divisor polynomial)
-        two = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        one = Polynomial(map_GF2int([1,3,5,1])) # must be monic! (because the function is optimized for monic divisor polynomial)
+        two = Polynomial(map_GF2int([5,3,1,1,6,8]))
         
         q, r = two._gffastdivmod(one) # optimized for monic divisor polynomial
 
@@ -90,21 +91,21 @@ class TestGFPoly(unittest.TestCase):
 
     def test_div_scalar(self):
         """Tests division by a scalar"""
-        numbers = map(GF2int, [5,20,50,100,134,158,0,148,233,254,4,5,2])
+        numbers = map_GF2int([5,20,50,100,134,158,0,148,233,254,4,5,2])
         scalar = GF2int(17)
 
-        poly = Polynomial(numbers)
+        poly = Polynomial(list(numbers))
         scalarpoly = Polynomial(x0=scalar)
 
         self.assertEqual(
                 list((poly // scalarpoly).coefficients),
-                map(lambda x: x / scalar, numbers)
+                [x / scalar for x in numbers]
                 )
 
     def test_div_scalar2(self):
         """Test that dividing by a scalar is the same as multiplying by the
         scalar's inverse"""
-        a = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        a = Polynomial(map_GF2int([5,3,1,1,6,8]))
 
         scalar = GF2int(50)
 
@@ -114,18 +115,18 @@ class TestGFPoly(unittest.TestCase):
                 )
 
     def test_evaluate(self):
-        a = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        a = Polynomial(map_GF2int([5,3,1,1,6,8]))
         e = a.evaluate(3)
         self.assertEqual(e, 196)
 
     def test_evaluate_array(self):
-        a = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        a = Polynomial(map_GF2int([5,3,1,1,6,8]))
         arr, sum = a.evaluate_array(3)
         self.assertEqual(sum, 196)
         self.assertEqual(list(arr), [255, 51, 15, 5, 10, 8])
 
     def test_derive(self):
-        a = Polynomial(map(GF2int, [5,3,1,1,6,8]))
+        a = Polynomial(map_GF2int([5,3,1,1,6,8]))
         r = a.derive()
         self.assertEqual(list(r), [17, 12, 3, 2, 6])
 

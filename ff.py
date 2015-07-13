@@ -235,9 +235,13 @@ class GF2int(int):
         y = GF2int_logtable[other]
         z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
         return GF2int(GF2int_exptable[z])
+    __floordiv__ = __div__
+    __truediv__ = __div__
 
     def __rdiv__(self, other):
         return self.inverse() * other
+    __rfloordiv__ = __rdiv__
+    __rtruediv__ = __rdiv__
 
     def __repr__(self):
         n = self.__class__.__name__

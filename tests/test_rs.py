@@ -13,7 +13,7 @@ class TestRSencoding(unittest.TestCase):
         coder = rs.RSCoder(5, 2)
         mes = [140, 128]
         ecc_good = [182, 242, 0]
-        messtr = "".join(chr(x) for x in mes)
+        messtr = bytearray(mes)
         self.assertEqual(hashlib.md5(messtr).hexdigest(), "8052809d008df30342a22e7910d05600")
 
         mesandecc = coder.encode(messtr)
@@ -188,9 +188,9 @@ class TestRSdecodinginside(unittest.TestCase):
 
         # Encode the message and tamper it
         rsman = rs.RSCoder(n, k, fcr=fcr, prim=prim, generator=generator, c_exp=c_exponent)
-        rmesecc = bytearray(rsman.encode(orig_mes, k=k))
+        rmesecc = bytearray([ord(x) for x in rsman.encode_fast(orig_mes, k=k)])
         rmesecc_orig = rmesecc[:] # make a copy to check later against the original message (only objective way to check if the message was successfully decoded)
-        rmesecc[:erasenb] = "\x00" * erasenb
+        rmesecc[:erasenb] = [0] * erasenb
 
         # Prepare the erasures positions
         erasures_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == 0]
@@ -244,8 +244,8 @@ class TestRSdecodinginside(unittest.TestCase):
         erasenb = 5
 
         rsman = rs.RSCoder(n, k, fcr=fcr, prim=prim, generator=generator, c_exp=c_exponent)
-        rmesecc = bytearray(rsman.encode(orig_mes, k=k))
-        rmesecc[-erasenb:] = "\x00" * erasenb
+        rmesecc = bytearray([ord(x) for x in rsman.encode(orig_mes, k=k)])
+        rmesecc[-erasenb:] = [0] * erasenb
         rmesecc_poly = rsman._list2gfpoly(rmesecc)
 
         # Compute the syndromes and check that 0 coefficients aren't removed
@@ -361,7 +361,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                 # Init the RS codec
                 rsman = rs.RSCoder(n, k, fcr=fcr, prim=prim, generator=generator, c_exp=c_exponent)
                 # Encode the message
-                rmesecc = bytearray(rsman.encode(orig_mes, k=k))
+                rmesecc = rsman.encode(orig_mes, k=k)
                 rmesecc_orig = rmesecc[:] # make a copy of the original message to check later if fully corrected (because the syndrome may be wrong sometimes)
                 # Tamper the message
                 if erratanb > 0:
@@ -375,7 +375,9 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                         sl = slice(-istart-erratanb, None)
                     if debugg:
                         print("Removed slice:", list(rmesecc[sl]), rmesecc[sl])
-                    rmesecc[sl] = "\x00" * erratanb
+                    rmesecc = bytearray([ord(x) for x in rmesecc]) # convert to bytearray (mutable string)
+                    rmesecc[sl] = [0] * erratanb # erase some symbols
+                    #rmesecc = ''.join(chr(x) for x in rmesecc) # convert back to str
                 # Generate the erasures positions (if any)
                 erase_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == 0]
                 if errnb > 0: erase_pos = erase_pos[:-errnb] # remove the errors positions (must not be known by definition)
@@ -389,7 +391,7 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                     rmes, recc = rsman.decode_fast(rmesecc, k=k, erasures_pos=erase_pos, only_erasures=only_erasures)
                     results_br.append( rsman.check(rmes + recc, k=k) ) # check if correct by syndrome analysis (can be wrong)
                     results_br.append( rmesecc_orig == (rmes+recc) ) # check if correct by comparing to the original message (always correct)
-                    if debugg and not rsman.check(rmes + recc, k=k) or not (rmesecc_orig == (rmes+recc)): raise RSCodecError("False!!!!!")
+                    if debugg and not rsman.check(rmes + recc, k=k) or not (rmesecc_orig == (rmes+recc)): raise rs.RSCodecError("False!!!!!")
                 except rs.RSCodecError as exc:
                     results_br.append(False)
                     results_br.append(False)
@@ -401,8 +403,11 @@ class TestRSCodecUniversalCrossValidation(unittest.TestCase):
                         print(erase_pos)
                         print("original_msg", rmesecc_orig)
                         print("tampered_msg", rmesecc)
-                        print("decoded_msg", rmes+recc)
-                        print("checks: ", rsman.check(rmes + recc, k=k), rmesecc_orig == (rmes+recc))
+                        try:
+                            print("decoded_msg", rmes+recc)
+                            print("checks: ", rsman.check(rmes + recc, k=k), rmesecc_orig == (rmes+recc))
+                        except Exception:
+                            pass
                         print("====")
                         raise exc
                 # -- normal method
@@ -442,10 +447,10 @@ class TestRSFIXME(unittest.TestCase):
         # init the codec
         rsman = rs.RSCoder(n, k) # every set of parameters for generator/prim/fcr will give the same issue (even if the output is different, but in the end, the message won't be decoded correctly but check won't detect the error)
         # encode the message
-        rmesecc = bytearray(rsman.encode(mes, k=k))
+        rmesecc = bytearray([ord(x) for x in rsman.encode(mes, k=k)])
         rmesecc_orig = rmesecc[:] # copy the original untampered message for later checking
         # tamper the message
-        rmesecc[istart:istart+erasenb] = erase_char * erasenb # introduce erratas
+        rmesecc[istart:istart+erasenb] = [ord(erase_char)] * erasenb # introduce erratas
         erase_pos = [x for x in _range(len(rmesecc)) if rmesecc[x] == ord(erase_char)] # compute erasures positions
         if errnb > 0: erase_pos = erase_pos[:-errnb] # remove the errors positions (so we only have erasures)
         # decode the message
