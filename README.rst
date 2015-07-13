@@ -1,7 +1,8 @@
 Reed Solomon Encoder and Decoder written in pure Python
 =======================================================
 
-[![Build Status](https://travis-ci.org/lrq3000/Reed-Solomon.svg?branch=master)](https://travis-ci.org/lrq3000/Reed-Solomon)
+.. image:: https://travis-ci.org/lrq3000/Reed-Solomon.svg?branch=master
+    :target: https://travis-ci.org/lrq3000/Reed-Solomon
 
 Written from scratch by Andrew Brown <brownan@gmail.com> <brownan@cs.duke.edu>
 (c) 2010.
