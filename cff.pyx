@@ -239,14 +239,14 @@ cdef class GF2int(object): # with (int) it works, else it doesn't... # DO NOT tr
         cdef int y = GF2int_logtable[other]
         cdef int z = (x - y) % GF2_charac # in logarithms, substraction = division after exponentiation
         return GF2int(GF2int_exptable[z])
-    __floordiv__ = __div__
-    __truediv__ = __div__
+    def __floordiv__(self, other) = return self.__div__(other)
+    def __truediv__(self, other) = return self.__div__(other)
 
     def __rdiv__(int self, int other):
         #return self.inverse() * other
         return GF2int.__div__(other, self)
-    __rfloordiv__ = __rdiv__
-    __rtruediv__ = __rdiv__
+    def __rfloordiv__(self, other) = return self.__rdiv__(other)
+    def __rtruediv__(self, other) = return self.__rdiv__(other)
 
     def __repr__(GF2int self):
         n = self.__class__.__name__
