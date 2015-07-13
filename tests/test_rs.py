@@ -110,6 +110,7 @@ class TestRSdecoding(unittest.TestCase):
 
             self.assertEqual(self.string, decode)
 
+    @unittest.skip("testing skipping")
     def disabled_test_twoerr(self):
         '''Test that changing every combination of 2 bytes still decodes.
         This test is long and probably unnecessary (if it decodes with 1 byte error in any position, it should also work with 2 in any position).'''
