@@ -1,43 +1,57 @@
-Reed Solomon Encoder and Decoder written in pure Python
-=======================================================
+Documented Universal Errors-and-erasures Reed Solomon Codec written in pure Python
+======================================================================
 
 .. image:: https://travis-ci.org/lrq3000/Reed-Solomon.svg?branch=master
     :target: https://travis-ci.org/lrq3000/Reed-Solomon
 
 Written from scratch by Andrew Brown <brownan@gmail.com> <brownan@cs.duke.edu>
 (c) 2010.
-Updated by Stephen Larroque <LRQ3000@gmail.com> in 2015.
+Upgraded by Stephen Larroque <LRQ3000@gmail.com> in 2015.
 
 Licensed under the MIT License.
 
-I wrote this code as an exercise in implementing the Reed-Solomon error
-correction algorithm. This code is published in the hopes that it will be
-useful for others in learning how the algorithm works. (Nothing helps me learn
-something better than a good example!)
+This library implements a pure-Python documented universal Reed-Solomon
+error correction codec with a mathematical nomenclatura, compatible with
+Python 2.7 up to 3.4 and also with PyPy 2 and Pypy 3.
 
-My goal was to implement a working Reed-Solomon encoder and decoder in pure
-python using no non-standard libraries. I also aimed to keep the code fairly
-well commented and organized.
+The project aims to keep a well commented and organized code with
+an extensive documentation and mathematical clarity of the various
+arithmetic operations.
 
-However, a lot of the math involved is non-trivial and I can't explain it all
-in my comments. To learn more about the algorithm, see these resources:
+How does this library differs from other Reed-Solomon libraries?
+
+* mathematical nomenclatura = for example, contrary to most other RS
+libraries, you will see a clear distinction the different mathematical constructs,
+such as the Galois Fields numbers are clearly separated from the generic
+Polynomial objects, and both are separated from the Reed-Solomon algorithm,
+which makes use of both of those constructs. For this purpose, object-oriented
+programming was chosen to design the architecture of the library, although obviously
+at the expense of a bit of performance. However, this library favors mathematical
+clarity and documentation over performance (even if performance is optimized
+whenever possible).
+* universal = compatibility with (almost) any other Reed-Solomon codec.
+This means that you can choose the parameters so that you can either encode data
+and decode it with another RS codec, or on the opposite encode data with another RS codec
+and decode this data with this library.
+* documented = following literate programming guidelines, you should understand everything
+you need about RS by reading the code and the comments.
+* pure-Python means that there are no dependencies whatsoever apart from the Python
+interpreter. This means that this library should be resilient in the future (since it doesn't
+depend on external libraries who can become broken with time, see software rot), and
+you can use it on any system where Python can be installed (including online cloud services).
+
+The authors tried their best to extensively document the algorithms.
+However, a lot of the math involved is non-trivial and we can't explain it all
+in the comments. To learn more about the algorithms, see these resources:
 
 * `<http://en.wikipedia.org/wiki/Reed–Solomon_error_correction>`_
 * `<http://www.cs.duke.edu/courses/spring10/cps296.3/rs_scribe.pdf>`_
 * `<http://www.cs.duke.edu/courses/spring10/cps296.3/decoding_rs_scribe.pdf>`_
-
-The last two resources are course notes from Bruce Maggs' class, which I took
-this past semester. Those notes were immensely useful and should be read by
-anyone wanting to learn the algorithm.
-
-Last two at Dr. Maggs' old site:
-
 * `<http://www.cs.cmu.edu/afs/cs.cmu.edu/project/pscico-guyb/realworld/www/reed_solomon.ps>`_
 * `<http://www.cs.cmu.edu/afs/cs.cmu.edu/project/pscico-guyb/realworld/www/rs_decode.ps>`_
 
-Also, here's a copy of the presentation I gave to the class Spring 2010 on my
-experience implementing this. The LaTeX source is in the presentation
-directory.
+Also, here's a copy of the presentation one of the authors gave to the class Spring 2010 on his
+experience implementing this library. The LaTeX source is in the presentation directory.
 
 `<http://www.cs.duke.edu/courses/spring10/cps296.3/decoding_rs.pdf>`_
 
@@ -57,10 +71,16 @@ rs.py
     Holds the Reed-Solomon Encoder/Decoder object
 
 polynomial.py
-    Contains the Polynomial object
+    Contains the Polynomial object (pure-python)
 
 ff.py
-    Contains the GF2int object representing an element of the GF(2^8) field
+    Contains the GF2int object representing an element of the GF(2^p) field, with p being 8 by default (pure-python)
+
+polynomial.pyx
+    Cython implementation of polynomial.py with equivalent functions (optional)
+
+ff.pyx
+    Cython implementation of ff.py with equivalent functions (optional)
 
 Documentation
 -------------
@@ -255,3 +275,14 @@ printable punctuation). The parity data, however, is binary and contains bytes
 from the full range 0-255. Also note that either the data area or the parity
 area (or both!) can be disturbed as long as no more than 16 bytes per row are
 disturbed.
+
+Cython implementation
+~~~~~~~~~~~~~~~~~~
+
+If either a C compiler or Cython is found, rs.py will automatically load the Cython implementations
+(the *.pyx files).
+These are provided as optimized versions of the pure-python implementations, with equivalent
+functionalities. The goal was to get a speedup, which is the case, but using PyPy on the pure-python
+implementation provides a significantly higher speedup than the Cython implementation.
+The Cython implementations are still provided for the interested reader, but the casual user is
+not advised to use them. If you want to encode and decode fast, use PyPy.
