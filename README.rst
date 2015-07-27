@@ -71,22 +71,21 @@ ff.pyx
 Documentation
 -------------
 rs.RSCoder(n, k, generator=3, prim=0x11b, fcr=1, c_exp=8)
-     Creates a new Reed-Solomon Encoder/Decoder object configured with
-     the given n and k values.
-     n is the length of a codeword, must be less than 256
-     k is the length of the message, must be less than n
-     generator, prim and fcr parametrize the Galois Field that will be built
-     c_exp is the Galois Field range (ie, 8 means GF(2^8) = GF(256)), which is both the limit for one symbol's value, and the maximum length of a message+ecc.
-     
-     The code will have error correcting power (ie, maximum number of repairable symbols) of `2*e+v <= (n-k)`, where e is the number of errors and v the number of erasures.
-     
-     The typical RSCoder is RSCoder(255, 223)
+    Creates a new Reed-Solomon Encoder/Decoder object configured with
+    the given n and k values.
+    n is the length of a codeword, must be less than 256
+    k is the length of the message, must be less than n
+    generator, prim and fcr parametrize the Galois Field that will be built
+    c_exp is the Galois Field range (ie, 8 means GF(2^8) = GF(256)), which is both the limit for one symbol's value, and the maximum length of a message+ecc.
+
+    The code will have error correcting power (ie, maximum number of repairable symbols) of `2*e+v <= (n-k)`, where e is the number of errors and v the number of erasures.
+
+    The typical RSCoder is RSCoder(255, 223)
 
 RSCoder.encode(message, poly=False, k=None)
-RSCoder.encode_fast(message, poly=False, k=None)
     Encode a given string with reed-solomon encoding. Returns a byte
     string with the k message bytes and n-k parity bytes at the end.
-    
+
     If a message is < k bytes long, it is assumed to be padded at the front
     with null bytes (ie, a shortened Reed-Solomon code).
 
@@ -94,18 +93,20 @@ RSCoder.encode_fast(message, poly=False, k=None)
 
     If poly is not False, returns the encoded Polynomial object instead of
     the polynomial translated back to a string (useful for debugging)
-    
+
     You can change the length (number) of parity/ecc bytes at encoding
     by setting k to any value between [1, n-1]. This allows to create only
     one RSCoder and then use it with a variable redundancy rate.
 
+RSCoder.encode_fast(message, poly=False, k=None)
+    Same as encode() but using faster algorithms and optimization tricks.
+
 RSCoder.decode(message_ecc, nostrip=False, k=None, erasures_pos=None, only_erasures=False):
-RSCoder.decode_fast(message_ecc, nostrip=False, k=None, erasures_pos=None, only_erasures=False):
     Given a received string or byte array message_ecc (composed of
     a message string + ecc symbols at the end), attempts to decode it.
     If it's a valid codeword, or if there are no more than `2*e+v <= (n-k)` erratas
     (called the Singleton bound), the message is returned.
-    
+
     You can provide the erasures positions as a list to erasures_pos.
     For example, if you have "hella warld" and you know that `a` is an erasure,
     you can provide the list erasures_pos=[4, 7]. You can correct twice as many
@@ -113,7 +114,7 @@ RSCoder.decode_fast(message_ecc, nostrip=False, k=None, erasures_pos=None, only_
     symbols), then there's no problem, they will be repaired just fine (but will count
     towards the Singleton bound). You can also specify that you are sure there are
     only erasures and no errors at all by setting only_erasures=True.
-    
+
     A message always has k bytes, if a message contained less it is left
     padded with null bytes (punctured RS code). When decoded, these leading
     null bytes are stripped, but that can cause problems if decoding binary data.
@@ -122,8 +123,10 @@ RSCoder.decode_fast(message_ecc, nostrip=False, k=None, erasures_pos=None, only_
 
     Note that RS can correct errors both in the message and the ecc symbols.
 
+RSCoder.decode_fast(message_ecc, nostrip=False, k=None, erasures_pos=None, only_erasures=False):
+    Same as decode() but using faster algorithms and optimization tricks.
+
 RSCoder.check(message_ecc, k=None)
-RSCoder.check_fast(message_ecc, k=None)
     Verifies the codeword (message + ecc symbols at the end) is valid by testing
     that the code as a polynomial code divides g, or that the syndrome is
     all 0 coefficients. The result is not foolproof: if it's False, you're sure the
@@ -132,11 +135,18 @@ RSCoder.check_fast(message_ecc, k=None)
     too many errors (ie, more than the Singleton bound) for RS to do anything about it.
     returns True/False
 
+RSCoder.check_fast(message_ecc, k=None)
+    Same as check() but using faster algorithms and optimization tricks.
+
+
 
 Internal API
 -------------
 Besides the main RSCoder object, two other objects are used in this
-implementation. Their use is not specifically tied to the coder.
+implementation: Polynomial and GF2int. Their use is not specifically tied
+to the coder or even to the Reed-Solomon algorithm, they are just generic
+mathematical constructs respectively representing polynomials and
+Galois field's number of base 2.
 
 polynomial.Polynomial(coefficients=[], \**sparse)
     There are three ways to initialize a Polynomial object.
