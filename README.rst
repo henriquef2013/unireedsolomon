@@ -46,10 +46,10 @@ time), and to be universal (you can supply the parameters to be compatible with 
 any other RS codec).
 
 The codec has decent performances if you use PyPy with the fast methods (~1 MB/s),
-but it would be faster if we drop the oriented-object design (implementing everything in
+but it would be faster if we drop the object-oriented design (implementing everything in
 functions), but this would be at the expense of mathematical clarity. If you are interested,
 see the reedsolo library by Tomer Filiba, which is exactly the same implementation but
-without object-oriented design (about 5x speedup).
+only functional without objects (results in about 5x speedup).
 
 Files
 -----
