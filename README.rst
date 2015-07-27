@@ -20,25 +20,10 @@ arithmetic operations.
 
 How does this library differs from other Reed-Solomon libraries?
 
-* mathematical nomenclatura = for example, contrary to most other RS
-libraries, you will see a clear distinction the different mathematical constructs,
-such as the Galois Fields numbers are clearly separated from the generic
-Polynomial objects, and both are separated from the Reed-Solomon algorithm,
-which makes use of both of those constructs. For this purpose, object-oriented
-programming was chosen to design the architecture of the library, although obviously
-at the expense of a bit of performance. However, this library favors mathematical
-clarity and documentation over performance (even if performance is optimized
-whenever possible).
-* universal = compatibility with (almost) any other Reed-Solomon codec.
-This means that you can choose the parameters so that you can either encode data
-and decode it with another RS codec, or on the opposite encode data with another RS codec
-and decode this data with this library.
-* documented = following literate programming guidelines, you should understand everything
-you need about RS by reading the code and the comments.
-* pure-Python means that there are no dependencies whatsoever apart from the Python
-interpreter. This means that this library should be resilient in the future (since it doesn't
-depend on external libraries who can become broken with time, see software rot), and
-you can use it on any system where Python can be installed (including online cloud services).
+* mathematical nomenclatura = for example, contrary to most other RS libraries, you will see a clear distinction the different mathematical constructs, such as the Galois Fields numbers are clearly separated from the generic Polynomial objects, and both are separated from the Reed-Solomon algorithm, which makes use of both of those constructs. For this purpose, object-oriented programming was chosen to design the architecture of the library, although obviously at the expense of a bit of performance. However, this library favors mathematical clarity and documentation over performance (even if performance is optimized whenever possible).
+* universal = compatibility with (almost) any other Reed-Solomon codec. This means that you can choose the parameters so that you can either encode data and decode it with another RS codec, or on the opposite encode data with another RS codec and decode this data with this library.
+* documented = following literate programming guidelines, you should understand everything you need about RS by reading the code and the comments.
+* pure-Python means that there are no dependencies whatsoever apart from the Python interpreter. This means that this library should be resilient in the future (since it doesn't depend on external libraries who can become broken with time, see software rot), and you can use it on any system where Python can be installed (including online cloud services).
 
 The authors tried their best to extensively document the algorithms.
 However, a lot of the math involved is non-trivial and we can't explain it all
