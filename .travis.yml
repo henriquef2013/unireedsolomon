@@ -13,7 +13,7 @@ install:
  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then pip install --install-option='--no-cython-compile' cython ; fi
 
 script:
- - python setup.py build_ext --inplace
+ - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; python setup.py build_ext --inplace ; fi
  - nosetests -vv
 
 notifications:
