@@ -9,6 +9,7 @@ python:
     - pypy3
 
 install:
+ - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install importlib unittest2; fi
  - pip install --install-option='--no-cython-compile' cython
 
 script:
