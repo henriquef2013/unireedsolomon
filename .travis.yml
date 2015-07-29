@@ -21,7 +21,8 @@ notifications:
         on_success: change
         on_failure: change
 
-matrix:
-  allow_failures:
-    - python: pypy
-    - python: pypy3
+# PyPy can fail because of Cython - but this should not anymore since the related unit tests are now directly skipped if running under PyPy
+#matrix:
+#  allow_failures:
+#    - python: pypy
+#    - python: pypy3
