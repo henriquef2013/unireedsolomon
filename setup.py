@@ -51,7 +51,7 @@ setup(
     long_description = open("README.rst", "r").read(),
     classifiers = [
         "Development Status :: 5 - Production/Stable",
-        "License :: MIT License",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
