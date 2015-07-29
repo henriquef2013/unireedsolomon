@@ -8,7 +8,7 @@
 # For fast software computation in Finite Fields, see the excellent paper: Huang, Cheng, and Lihao Xu. "Fast software implementation of finite field operations." Washington University in St. Louis, Tech. Rep (2003).
 # to understand the basic mathematical notions behind finite fields, see the excellent tutorial: http://research.swtch.com/field
 
-from _compat import _range
+from ._compat import _range
 
 import array
 

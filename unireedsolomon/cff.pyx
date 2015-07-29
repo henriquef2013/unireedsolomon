@@ -10,7 +10,7 @@
 import cython
 cimport cython
 
-from _compat import _range
+from ._compat import _range
 
 from cpython cimport array
 

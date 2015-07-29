@@ -12,7 +12,7 @@ Licensed under the MIT License.
 
 This library implements a pure-Python documented universal Reed-Solomon
 error correction codec with a mathematical nomenclatura, compatible with
-Python 2.7 up to 3.4 and also with PyPy 2 and Pypy 3.
+Python 2.6 up to 3.4 and also with PyPy 2 and PyPy 3.
 
 The project aims to keep a well commented and organized code with
 an extensive documentation and mathematical clarity of the various
@@ -70,7 +70,7 @@ ff.pyx
 
 Documentation
 -------------
-rs.RSCoder(n, k, generator=3, prim=0x11b, fcr=1, c_exp=8)
+unireedsolomon.rs.RSCoder(n, k, generator=3, prim=0x11b, fcr=1, c_exp=8)
     Creates a new Reed-Solomon Encoder/Decoder object configured with
     the given n and k values.
     n is the length of a codeword, must be less than 256
@@ -138,6 +138,11 @@ RSCoder.check(message_ecc, k=None)
 RSCoder.check_fast(message_ecc, k=None)
     Same as check() but using faster algorithms and optimization tricks.
 
+unireedsolomon.ff.find_prime_polynomials(generator=2, c_exp=8, fast_primes=False, single=False)
+    Compute the list of prime polynomials for the given generator and
+    galois field characteristic exponent. You can then use this prime polynomial
+    to specify the mandatory "prim" parameter, particularly if you are using
+    a larger Galois Field (eg, 2^16).
 
 
 Internal API
@@ -147,6 +152,10 @@ implementation: Polynomial and GF2int. Their use is not specifically tied
 to the coder or even to the Reed-Solomon algorithm, they are just generic
 mathematical constructs respectively representing polynomials and
 Galois field's number of base 2.
+
+You do not need to know about the internal API to use the RS codec,
+this is just left as a documentation for the reader interested into dwelling
+inside the mathematical constructs.
 
 polynomial.Polynomial(coefficients=[], \**sparse)
     There are three ways to initialize a Polynomial object.
