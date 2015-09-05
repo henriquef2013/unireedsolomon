@@ -4,6 +4,12 @@ Documented Universal Errors-and-erasures Reed Solomon Codec written in pure Pyth
 .. image:: https://travis-ci.org/lrq3000/unireedsolomon.svg?branch=master
     :target: https://travis-ci.org/lrq3000/unireedsolomon
 
+.. image:: https://coveralls.io/repos/lrq3000/unireedsolomon/badge.svg?branch=master&service=github
+  :target: https://coveralls.io/github/lrq3000/unireedsolomon?branch=master
+
+.. image:: https://badge.fury.io/py/unireedsolomon.svg
+    :target: http://badge.fury.io/py/unireedsolomon
+
 Written from scratch by Andrew Brown <brownan@gmail.com> <brownan@cs.duke.edu>
 (c) 2010.
 Upgraded by Stephen Larroque <LRQ3000@gmail.com> in 2015.
