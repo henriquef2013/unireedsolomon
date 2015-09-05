@@ -15,10 +15,8 @@ install:
 
 script:
  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then python setup.py build_ext --inplace ; fi
- - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]];
- then nosetests -vv --with-coverage ; # PyPy is way to slow with coverage at the moment of this writing, so better avoid coverage when using PyPy
- else nosetests -vv ;
- fi
+ # PyPy is way to slow with coverage at the moment of this writing, so better avoid coverage when using PyPy
+ - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]] ; then nosetests -vv --with-coverage ; else nosetests -vv ; fi
  - nosetests -vv --with-coverage
 
 after_success:
