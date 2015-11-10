@@ -1,5 +1,5 @@
 Documented Universal Errors-and-erasures Reed Solomon Codec written in pure Python
-======================================================================
+==================================================================================
 
 .. image:: https://travis-ci.org/lrq3000/unireedsolomon.svg?branch=master
     :target: https://travis-ci.org/lrq3000/unireedsolomon
@@ -9,6 +9,9 @@ Documented Universal Errors-and-erasures Reed Solomon Codec written in pure Pyth
 
 .. image:: https://badge.fury.io/py/unireedsolomon.svg
     :target: http://badge.fury.io/py/unireedsolomon
+
+.. image:: https://img.shields.io/pypi/dm/unireedsolomon.svg
+    :target: https://pypi.python.org/pypi/unireedsolomon
 
 Written from scratch by Andrew Brown <brownan@gmail.com> <brownan@cs.duke.edu>
 (c) 2010.
@@ -288,10 +291,10 @@ area (or both!) can be disturbed as long as no more than 16 bytes per row are
 disturbed.
 
 Cython implementation
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If either a C compiler or Cython is found, rs.py will automatically load the Cython implementations
-(the *.pyx files).
+(the \*.pyx files).
 These are provided as optimized versions of the pure-python implementations, with equivalent
 functionalities. The goal was to get a speedup, which is the case, but using PyPy on the pure-python
 implementation provides a significantly higher speedup than the Cython implementation.

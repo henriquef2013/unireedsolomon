@@ -52,6 +52,9 @@ setup(
     classifiers = [
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
@@ -60,6 +63,8 @@ setup(
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: Cython",
         "Topic :: Communications",
         "Topic :: Scientific/Engineering :: Mathematics",
         "Topic :: System :: Archiving :: Backup",
